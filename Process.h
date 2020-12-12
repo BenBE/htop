@@ -155,6 +155,10 @@ static inline bool Process_isChildOf(const Process* this, pid_t pid) {
 
 #define Process_sortState(state) ((state) == 'I' ? 0x100 : (state))
 
+#define CMDLINE_HIGHLIGHT_FLAG_SEPARATOR  0x00000001
+#define CMDLINE_HIGHLIGHT_FLAG_BASENAME   0x00000002
+#define CMDLINE_HIGHLIGHT_FLAG_COMM       0x00000004
+#define CMDLINE_HIGHLIGHT_FLAG_DELETED    0x00000008
 
 #define ONE_K 1024UL
 #define ONE_M (ONE_K * ONE_K)
