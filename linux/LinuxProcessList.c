@@ -1111,9 +1111,9 @@ static bool LinuxProcessList_readCmdlineFile(Process* process, openat_arg_t proc
 
    LinuxProcess *lp = (LinuxProcess *)process;
    lp->mergedCommand.maxLen = lastChar + 1;  /* accommodate cmdline */
-   if (!process->comm || !String_eq(command, process->comm)) {
+   if (!process->cmdline || !String_eq(command, process->cmdline)) {
       process->basenameOffset = tokenEnd;
-      free_and_xStrdup(&process->comm, command);
+      free_and_xStrdup(&process->cmdline, command);
       lp->procCmdlineBasenameOffset = tokenStart;
       lp->procCmdlineBasenameEnd = tokenEnd;
       lp->mergedCommand.cmdlineChanged = true;
@@ -1432,11 +1432,11 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, openat_arg_
 
       if (proc->state == 'Z' && (proc->basenameOffset == 0)) {
          proc->basenameOffset = -1;
-         free_and_xStrdup(&proc->comm, command);
+         free_and_xStrdup(&proc->cmdline, command);
       } else if (Process_isThread(proc)) {
          if (settings->showThreadNames || Process_isKernelThread(proc)) {
             proc->basenameOffset = -1;
-            free_and_xStrdup(&proc->comm, command);
+            free_and_xStrdup(&proc->cmdline, command);
          }
 
          if (Process_isKernelThread(proc)) {

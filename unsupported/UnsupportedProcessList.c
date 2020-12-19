@@ -41,7 +41,7 @@ void ProcessList_goThroughEntries(ProcessList* super, bool pauseProcessUpdate) {
    proc->pid  = 1;
    proc->ppid = 1;
    proc->tgid = 0;
-   proc->comm = "<unsupported architecture>";
+   proc->cmdline = "<unsupported architecture>";
    proc->basenameOffset = 0;
    proc->updated = true;
 
