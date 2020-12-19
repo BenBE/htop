@@ -160,6 +160,8 @@ static bool Settings_read(Settings* this, const char* fileName, int initialCpuCo
          this->showProgramPath = atoi(option[1]);
       } else if (String_eq(option[0], "highlight_base_name")) {
          this->highlightBaseName = atoi(option[1]);
+      } else if (String_eq(option[0], "highlight_deleted_exe")) {
+         this->highlightDeletedExe = atoi(option[1]);
       } else if (String_eq(option[0], "highlight_megabytes")) {
          this->highlightMegabytes = atoi(option[1]);
       } else if (String_eq(option[0], "highlight_threads")) {
@@ -290,6 +292,7 @@ bool Settings_write(Settings* this) {
    fprintf(fd, "show_thread_names=%d\n", (int) this->showThreadNames);
    fprintf(fd, "show_program_path=%d\n", (int) this->showProgramPath);
    fprintf(fd, "highlight_base_name=%d\n", (int) this->highlightBaseName);
+   fprintf(fd, "highlight_deleted_exe=%d\n", (int) this->highlightDeletedExe);
    fprintf(fd, "highlight_megabytes=%d\n", (int) this->highlightMegabytes);
    fprintf(fd, "highlight_threads=%d\n", (int) this->highlightThreads);
    fprintf(fd, "highlight_changes=%d\n", (int) this->highlightChanges);
@@ -338,6 +341,7 @@ Settings* Settings_new(int initialCpuCount) {
    this->hideUserlandThreads = false;
    this->treeView = false;
    this->highlightBaseName = false;
+   this->highlightDeletedExe = true;
    this->highlightMegabytes = false;
    this->detailedCPUTime = false;
    this->countCPUsFromOne = false;

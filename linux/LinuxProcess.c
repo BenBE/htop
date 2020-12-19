@@ -509,7 +509,7 @@ static void LinuxProcess_writeCommand(const Process* this, int attr, int baseAtt
 
    const bool highlightBaseName = this->settings->highlightBaseName;
    const bool highlightSeparator = true;
-   const bool highlightDeleted = true;
+   const bool highlightDeleted = this->settings->highlightDeletedExe;
 
    RichString_appendWide(str, attr, lp->mergedCommand.str);
 
@@ -705,7 +705,7 @@ static void LinuxProcess_writeField(const Process* this, RichString* str, Proces
       const char* procExe;
       if (lp->procExe) {
          attr = CRT_colors[Process_isUserlandThread(this) ? PROCESS_THREAD_BASENAME : PROCESS_BASENAME];
-         if (lp->procExeDeleted)
+         if (lp->procExeDeleted && this->settings->highlightDeletedExe)
             attr = CRT_colors[FAILED_READ];
          procExe = lp->procExe + lp->procExeBasenameOffset;
       } else {
