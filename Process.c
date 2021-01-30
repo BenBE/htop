@@ -432,6 +432,8 @@ void Process_display(const Object* cast, RichString* out) {
 void Process_done(Process* this) {
    assert (this != NULL);
    free(this->cmdline);
+   free(this->procComm);
+   free(this->procExe);
 }
 
 static const char* Process_getCommandStr(const Process* p) {
