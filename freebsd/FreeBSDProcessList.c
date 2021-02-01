@@ -479,7 +479,7 @@ void ProcessList_goThroughEntries(ProcessList* super, bool pauseProcessUpdate) {
          Process_fillStarttimeBuffer(proc);
          proc->user = UsersTable_getRef(super->usersTable, proc->st_uid);
          ProcessList_add(super, proc);
-         proc->cmdline = FreeBSDProcessList_readProcessName(fpl->kd, kproc, &proc->basenameOffset);
+         proc->cmdline = FreeBSDProcessList_readProcessName(fpl->kd, kproc, &proc->cmdlineBasenameOffset);
          fp->jname = FreeBSDProcessList_readJailName(kproc);
       } else {
          if (fp->jid != kproc->ki_jid) {
@@ -497,7 +497,7 @@ void ProcessList_goThroughEntries(ProcessList* super, bool pauseProcessUpdate) {
          }
          if (settings->updateProcessNames) {
             free(proc->cmdline);
-            proc->cmdline = FreeBSDProcessList_readProcessName(fpl->kd, kproc, &proc->basenameOffset);
+            proc->cmdline = FreeBSDProcessList_readProcessName(fpl->kd, kproc, &proc->cmdlineBasenameOffset);
          }
       }
 

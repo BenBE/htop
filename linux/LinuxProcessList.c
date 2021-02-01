@@ -1034,7 +1034,7 @@ static bool LinuxProcessList_readCmdlineFile(Process* process, openat_arg_t proc
 
    if (amtRead == 0) {
       if (process->state == 'Z') {
-         process->basenameOffset = 0;
+         process->cmdlineBasenameOffset = 0;
       } else {
          ((LinuxProcess*)process)->isKernelThread = true;
       }
@@ -1154,7 +1154,7 @@ static bool LinuxProcessList_readCmdlineFile(Process* process, openat_arg_t proc
    LinuxProcess *lp = (LinuxProcess *)process;
    lp->mergedCommand.maxLen = lastChar + 1;  /* accommodate cmdline */
    if (!process->cmdline || !String_eq(command, process->cmdline)) {
-      process->basenameOffset = tokenEnd;
+      process->cmdlineBasenameOffset = tokenEnd;
       free_and_xStrdup(&process->cmdline, command);
       lp->procCmdlineBasenameOffset = tokenStart;
       lp->procCmdlineBasenameEnd = tokenEnd;
@@ -1472,15 +1472,15 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, openat_arg_
          LinuxProcessList_readCwd(lp, procFd);
       }
 
-      if (proc->state == 'Z' && (proc->basenameOffset == 0)) {
-         proc->basenameOffset = -1;
+      if (proc->state == 'Z' && (proc->cmdlineBasenameOffset == 0)) {
+         proc->cmdlineBasenameOffset = -1;
          free_and_xStrdup(&proc->cmdline, command);
          lp->procCmdlineBasenameOffset = 0;
          lp->procCmdlineBasenameEnd = 0;
          lp->mergedCommand.commChanged = true;
       } else if (Process_isThread(proc)) {
          if (settings->showThreadNames || Process_isKernelThread(proc)) {
-            proc->basenameOffset = -1;
+            proc->cmdlineBasenameOffset = -1;
             free_and_xStrdup(&proc->cmdline, command);
             lp->procCmdlineBasenameOffset = 0;
             lp->procCmdlineBasenameEnd = 0;
