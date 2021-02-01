@@ -1154,10 +1154,9 @@ static bool LinuxProcessList_readCmdlineFile(Process* process, openat_arg_t proc
    LinuxProcess *lp = (LinuxProcess *)process;
    lp->mergedCommand.maxLen = lastChar + 1;  /* accommodate cmdline */
    if (!process->cmdline || !String_eq(command, process->cmdline)) {
-      process->cmdlineBasenameOffset = tokenEnd;
       free_and_xStrdup(&process->cmdline, command);
       lp->procCmdlineBasenameOffset = tokenStart;
-      lp->procCmdlineBasenameEnd = tokenEnd;
+      process->cmdlineBasenameOffset = tokenEnd;
       lp->mergedCommand.cmdlineChanged = true;
    }
 
