@@ -414,6 +414,8 @@ void ProcessList_goThroughEntries(ProcessList* super, bool pauseProcessUpdate) {
 
          ProcessList_add(super, proc);
          proc->cmdline = DragonFlyBSDProcessList_readProcessName(dfpl->kd, kproc, &proc->cmdlineBasenameEnd);
+         proc->mergedCommand.cmdlineChanged = true;
+
          dfp->jname = DragonFlyBSDProcessList_readJailName(dfpl, kproc->kp_jailid);
       } else {
          proc->processor = kproc->kp_lwp.kl_cpuid;
@@ -431,6 +433,7 @@ void ProcessList_goThroughEntries(ProcessList* super, bool pauseProcessUpdate) {
          if (settings->updateProcessNames) {
             free(proc->cmdline);
             proc->cmdline = DragonFlyBSDProcessList_readProcessName(dfpl->kd, kproc, &proc->cmdlineBasenameEnd);
+            proc->mergedCommand.cmdlineChanged = true;
          }
       }
 
