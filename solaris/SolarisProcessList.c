@@ -296,6 +296,19 @@ void ProcessList_delete(ProcessList* pl) {
    free(spl);
 }
 
+static void SolarisProcessList_updateExe(pid_t pid, Process* proc) {
+   char path[32];
+   xSnprintf(path, sizeof(path), "/proc/%d/path/a.out", pid);
+
+   char target[PATH_MAX];
+   ssize_t ret = readlink(path, target, sizeof(target) - 1);
+   if (ret <= 0)
+      return;
+
+   target[ret] = '\0';
+   Process_updateExe(proc, target);
+}
+
 /* NOTE: the following is a callback function of type proc_walk_f
  *       and MUST conform to the appropriate definition in order
  *       to work.  See libproc(3LIB) on a Solaris or Illumos
@@ -353,6 +366,7 @@ static int SolarisProcessList_walkproc(psinfo_t* _psinfo, lwpsinfo_t* _lwpsinfo,
       sproc->zoneid         = _psinfo->pr_zoneid;
       sproc->zname          = SolarisProcessList_readZoneName(spl->kd, sproc);
       proc->user            = UsersTable_getRef(pl->usersTable, proc->st_uid);
+      SolarisProcessList_updateExe(_psinfo->pr_pid, proc);
       Process_updateComm(proc, _psinfo->pr_fname);
       Process_updateCmdline(proc, _psinfo->pr_psargs, 0, 0);
    }

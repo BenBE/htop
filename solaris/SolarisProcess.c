@@ -47,6 +47,7 @@ const ProcessFieldData Process_fields[LAST_PROCESSFIELD] = {
    [NLWP] = { .name = "NLWP", .title = "NLWP ", .description = "Number of threads in the process", .flags = 0, },
    [TGID] = { .name = "TGID", .title = "TGID", .description = "Thread group ID (i.e. process ID)", .flags = 0, .pidColumn = true, },
    [PROC_COMM] = { .name = "COMM", .title = "COMM            ", .description = "comm string of the process", .flags = 0, },
+   [PROC_EXE] = { .name = "EXE", .title = "EXE             ", .description = "Basename of exe of the process", .flags = 0, },
    [ZONEID] = { .name = "ZONEID", .title = "ZONEID", .description = "Zone ID", .flags = 0, .pidColumn = true, },
    [ZONE] = { .name = "ZONE", .title = "ZONE             ", .description = "Zone name", .flags = 0, },
    [PROJID] = { .name = "PROJID", .title = "PRJID", .description = "Project ID", .flags = 0, .pidColumn = true, },
