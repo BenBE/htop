@@ -353,8 +353,8 @@ static int SolarisProcessList_walkproc(psinfo_t* _psinfo, lwpsinfo_t* _lwpsinfo,
       sproc->zoneid         = _psinfo->pr_zoneid;
       sproc->zname          = SolarisProcessList_readZoneName(spl->kd, sproc);
       proc->user            = UsersTable_getRef(pl->usersTable, proc->st_uid);
-      proc->cmdline         = xStrdup(_psinfo->pr_fname);
-      proc->mergedCommand.cmdlineChanged = true;
+      Process_updateComm(proc, _psinfo->pr_fname);
+      Process_updateCmdline(proc, _psinfo->pr_psargs, 0, 0);
    }
 
    // End common code pass 1
@@ -395,12 +395,10 @@ static int SolarisProcessList_walkproc(psinfo_t* _psinfo, lwpsinfo_t* _lwpsinfo,
       proc->time               = _lwpsinfo->pr_time.tv_sec;
       if (!preExisting) { // Tasks done only for NEW LWPs
          proc->isUserlandThread    = true;
-         proc->cmdlineBasenameEnd = -1;
          proc->ppid            = _psinfo->pr_pid * 1024;
          proc->tgid            = _psinfo->pr_pid * 1024;
          sproc->realppid       = _psinfo->pr_pid;
          proc->starttime_ctime = _lwpsinfo->pr_start.tv_sec;
-         proc->mergedCommand.cmdlineChanged = true;
       }
 
       // Top-level process only gets this for the representative LWP
