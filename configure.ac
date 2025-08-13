@@ -1265,6 +1265,155 @@ AC_SUBST([AM_CPPFLAGS])
 
 
 # ----------------------------------------------------------------------
+# Check for compile DB utilities
+# ----------------------------------------------------------------------
+AC_ARG_ENABLE([compiledb],
+   [AS_HELP_STRING(
+      [--enable-compiledb=TOOL],
+      [enable compile_commands.json generation using TOOL @<:@default=no@:>@. Valid values are auto, bear, intercept-build, compiledb, jq, or path to script]
+   )],
+   [enable_compile_db=$enableval],
+   [enable_compile_db=auto]
+)
+
+COMPILEDB_METHOD=no
+COMPILEDB_UTIL=""
+
+if test "x$enable_compile_db" != xno; then
+   check_compiledb_tool() {
+      tool_name="$1"
+      AC_CHECK_PROG([TOOL_CHECK_RESULT], [$tool_name], [$tool_name], [no])
+      if test "x$TOOL_CHECK_RESULT" != xno; then
+         COMPILEDB_METHOD="$tool_name"
+         COMPILEDB_UTIL="$tool_name"
+         enable_compile_db="$tool_name"
+         return 0
+      fi
+      return 1
+   }
+
+   find_best_intercept_build() {
+      AC_CHECK_PROG([INTERCEPT_BUILD], [intercept-build], [intercept-build], [no])
+      if test "x$INTERCEPT_BUILD" != xno; then
+         COMPILEDB_METHOD="intercept-build"
+         COMPILEDB_UTIL="intercept-build"
+         enable_compile_db="intercept-build"
+         return 0
+      fi
+
+      # Find all intercept-build-* commands in PATH with numeric suffix
+      AC_MSG_CHECKING([for intercept-build (versioned)])
+      versioned_tools=""
+      saved_IFS=$IFS
+      IFS=:
+      for dir in $PATH; do
+         if test -d "$dir"; then
+            for tool in "$dir"/intercept-build-*; do
+               if test -x "$tool" && test -f "$tool"; then
+                  versioned_tools="$versioned_tools $tool"
+               fi
+            done
+         fi
+      done
+      IFS=$saved_IFS
+
+      if test -n "$versioned_tools"; then
+         sorted_tools=`for t in $versioned_tools; do
+            version=$(echo "$t" | sed -e 's,.*intercept-build-,,g')
+            echo "$version $t"
+         done | sort -nr | awk '{print $2}'`
+         versioned_tools=$sorted_tools
+      fi
+
+      found=no
+      if test -n "$versioned_tools"; then
+         for tool in $versioned_tools; do
+            tool_name=`basename "$tool"`
+            COMPILEDB_METHOD="intercept-build"
+            COMPILEDB_UTIL="$tool"
+            enable_compile_db="$tool_name"
+            found=yes
+            break
+         done
+      fi
+
+      if test "$found" = yes; then
+         return 0
+      else
+         return 1
+      fi
+   }
+
+   case "$enable_compile_db" in
+      auto)
+         AC_MSG_CHECKING([for way to generate compile_commands.json])
+         if check_compiledb_tool bear; then
+            AC_MSG_RESULT([bear])
+         elif find_best_intercept_build; then
+            AC_MSG_RESULT([$enable_compile_db])
+            enable_compile_db=intercept-build
+            COMPILEDB_METHOD=intercept-build
+         elif check_compiledb_tool compiledb; then
+            AC_MSG_RESULT([compiledb])
+         elif check_compiledb_tool jq; then
+            AC_MSG_RESULT([jq])
+         else
+            enable_compile_db=no
+            COMPILEDB_METHOD=no
+            COMPILEDB_UTIL=""
+            AC_MSG_RESULT([no, compile_commands.json disabled])
+         fi
+         ;;
+      bear)
+         if ! check_compiledb_tool bear; then
+            AC_MSG_ERROR([bear not found but explicitly requested])
+         fi
+         ;;
+      intercept-build)
+         AC_CHECK_PROG([INTERCEPT_BUILD], [intercept-build], [intercept-build], [no])
+         if test "x$INTERCEPT_BUILD" = xno; then
+            AC_MSG_ERROR([intercept-build not found but explicitly requested])
+         fi
+         COMPILEDB_METHOD="intercept-build"
+         COMPILEDB_UTIL="intercept-build"
+         ;;
+      intercept-build-*)
+         AC_CHECK_PROG([INTERCEPT_BUILD_SPECIFIC], [$enable_compile_db], [$enable_compile_db], [no])
+         if test "x$INTERCEPT_BUILD_SPECIFIC" = xno; then
+            AC_MSG_ERROR([$enable_compile_db not found but explicitly requested])
+         fi
+         COMPILEDB_METHOD="intercept-build"
+         COMPILEDB_UTIL="$enable_compile_db"
+         ;;
+      compiledb)
+         if ! check_compiledb_tool compiledb; then
+            AC_MSG_ERROR([compiledb not found but explicitly requested])
+         fi
+         ;;
+      jq)
+         if ! check_compiledb_tool jq; then
+            AC_MSG_ERROR([jq not found but explicitly requested])
+         fi
+         ;;
+      *)
+         # Assume it's a path to a script
+         if test ! -f "$enable_compile_db"; then
+            AC_MSG_ERROR([script $enable_compile_db not found])
+         elif test ! -x "$enable_compile_db"; then
+            AC_MSG_ERROR([script $enable_compile_db is not executable])
+         fi
+         COMPILEDB_METHOD="script"
+         COMPILEDB_UTIL="$enable_compile_db"
+         ;;
+   esac
+fi
+
+AC_SUBST([COMPILEDB_METHOD])
+AC_SUBST([COMPILEDB_UTIL])
+# ----------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------
 # We're done, let's go!
 # ----------------------------------------------------------------------
 
@@ -1315,4 +1464,5 @@ AC_MSG_RESULT([
   hwloc:                     $enable_hwloc
   debug:                     $enable_debug
   static:                    $enable_static
+  compile db:                $enable_compile_db
 ])

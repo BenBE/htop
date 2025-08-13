@@ -525,3 +525,29 @@ lcov:
 	mkdir -p lcov
 	lcov --capture --directory . --output-file coverage.info
 	genhtml coverage.info --output-directory lcov
+
+# Generate compile_commands.json for tooling
+compile_commands.json: Makefile
+	@if test "$(COMPILEDB_METHOD)" = "bear"; then \
+		bear -- $(MAKE) clean all; \
+	elif test "$(COMPILEDB_METHOD)" = "jq"; then \
+		$(MAKE) clean; \
+		find . -name "*.o.ccdb.json" -delete \
+		rm -f compile_commands.json; \
+		$(MAKE) all; \
+		jq -s 'add' $$(find . -name "*.o.ccdb.json") > $@; \
+	elif test "$(COMPILEDB_METHOD)" = "intercept-build"; then \
+		$(COMPILEDB_UTIL) $(MAKE) clean all; \
+	elif test "$(COMPILEDB_METHOD)" = "compiledb"; then \
+		compiledb $(MAKE) clean all; \
+	elif test "$(COMPILEDB_METHOD)" = "script"; then \
+		$(MAKE) clean; \
+		$(MAKE) CC="$(COMPILEDB_UTIL) $(CC)" CXX="$(COMPILEDB_UTIL) $(CXX)" all; \
+		( echo '['; find . -name '*.o.ccdb.json' -exec cat {} \; ; echo ']' ) | sed -e 's/}[[:space:]]*{/},{/g' > compile_commands.json \
+	else \
+		echo "Generation of compile_commands.json is disabled or method '$(COMPILEDB_METHOD)' is unknown"; \
+		exit 1; \
+	fi
+
+.PHONY: compile_commands
+compile_commands: compile_commands.json
