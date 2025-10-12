@@ -137,7 +137,9 @@ static void Table_buildTreeBranch(Table* this, int rowid, unsigned int level, in
    }
 }
 
-static int compareRowByKnownParentThenNatural(const void* v1, const void* v2) {
+static int compareRowByKnownParentThenNatural(const void* v1, const void* v2, void* ctx) {
+   (void)ctx;
+
    return Row_compareByParent((const Row*) v1, (const Row*) v2);
 }
 
@@ -168,7 +170,7 @@ static void Table_buildTree(Table* this) {
    }
 
    // Sort by known parent (roots first), then row ID
-   Vector_quickSortCustomCompare(this->rows, compareRowByKnownParentThenNatural);
+   Vector_sort(this->rows, compareRowByKnownParentThenNatural, NULL);
 
    // Find all processes whose parent is not visible
    for (int i = 0; i < vsize; i++) {
@@ -199,7 +201,7 @@ void Table_updateDisplayList(Table* this) {
          Table_buildTree(this);
    } else {
       if (this->needsSort)
-         Vector_insertionSort(this->rows);
+         Vector_sort(this->rows, NULL, NULL);
       Vector_prune(this->displayList);
       int size = Vector_size(this->rows);
       for (int i = 0; i < size; i++)

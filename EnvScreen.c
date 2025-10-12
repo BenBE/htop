@@ -52,8 +52,8 @@ static void EnvScreen_scan(InfoScreen* this) {
       InfoScreen_addLine(this, "Could not read process environment.");
    }
 
-   Vector_insertionSort(this->lines);
-   Vector_insertionSort(panel->items);
+   Vector_sort(this->lines, NULL, NULL);
+   Vector_sort(panel->items, NULL, NULL);
    Panel_setSelected(panel, idx);
 }
 

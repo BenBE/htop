@@ -29,18 +29,15 @@ typedef struct Vector_ {
    bool isDirty;
 } Vector;
 
+typedef int (*Vector_SortFn)(const void *a, const void *b, void *ctx);
+
 Vector* Vector_new(const ObjectClass* type, bool owner, int size);
 
 void Vector_delete(Vector* this);
 
 void Vector_prune(Vector* this);
 
-void Vector_quickSortCustomCompare(Vector* this, Object_Compare compare);
-static inline void Vector_quickSort(Vector* this) {
-   Vector_quickSortCustomCompare(this, this->type->compare);
-}
-
-void Vector_insertionSort(Vector* this);
+void Vector_sort(Vector* this, Vector_SortFn cmp, void* ctx);
 
 void Vector_insert(Vector* this, int idx, void* data_);
 

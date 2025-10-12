@@ -93,91 +93,42 @@ void Vector_prune(Vector* this) {
    memset(this->array, '\0', this->arraySize * sizeof(Object*));
 }
 
-//static int comparisons = 0;
+typedef struct Vector_SortCtx {
+   Object_Compare cmp;
+} Vector_SortCtx_t;
 
-static void swap(Object** array, int indexA, int indexB) {
-   assert(indexA >= 0);
-   assert(indexB >= 0);
-   Object* tmp = array[indexA];
-   array[indexA] = array[indexB];
-   array[indexB] = tmp;
+static int Vector_sort_defaultCompare(const void* a, const void* b, void* ctx) {
+   Vector_SortCtx_t* sctx = ctx;
+
+   return sctx->cmp(a, b);
 }
 
-static int partition(Object** array, int left, int right, int pivotIndex, Object_Compare compare) {
-   const Object* pivotValue = array[pivotIndex];
-   swap(array, pivotIndex, right);
-   int storeIndex = left;
-   for (int i = left; i < right; i++) {
-      //comparisons++;
-      if (compare(array[i], pivotValue) <= 0) {
-         swap(array, i, storeIndex);
-         storeIndex++;
-      }
+void Vector_sort(Vector* this, Vector_SortFn cmp, void* ctx) {
+   Vector_SortCtx_t sctx = { 0 };
+
+   if (!cmp) {
+      assert(!ctx);
+      cmp = Vector_sort_defaultCompare;
+      sctx.cmp = this->type->compare;
+      ctx = &sctx;
    }
-   swap(array, storeIndex, right);
-   return storeIndex;
-}
 
-static void quickSort(Object** array, int left, int right, Object_Compare compare) {
-   if (left >= right)
-      return;
+   assert(cmp);
 
-   int pivotIndex = left + (right - left) / 2;
-   int pivotNewIndex = partition(array, left, right, pivotIndex, compare);
-   quickSort(array, left, pivotNewIndex - 1, compare);
-   quickSort(array, pivotNewIndex + 1, right, compare);
-}
+   assert(Vector_isConsistent(this));
 
-// If I were to use only one sorting algorithm for both cases, it would probably be this one:
-/*
-
-static void combSort(Object** array, int left, int right, Object_Compare compare) {
-   int gap = right - left;
-   bool swapped = true;
-   while ((gap > 1) || swapped) {
-      if (gap > 1) {
-         gap = (int)((double)gap / 1.247330950103979);
-      }
-      swapped = false;
-      for (int i = left; gap + i <= right; i++) {
-         comparisons++;
-         if (compare(array[i], array[i+gap]) > 0) {
-            swap(array, i, i+gap);
-            swapped = true;
-         }
-      }
-   }
-}
-
-*/
-
-static void insertionSort(Object** array, int left, int right, Object_Compare compare) {
-   for (int i = left + 1; i <= right; i++) {
-      Object* t = array[i];
+   for (int i = 1; i < this->items; i++) {
+      Object* t = this->array[i];
       int j = i - 1;
-      while (j >= left) {
-         //comparisons++;
-         if (compare(array[j], t) <= 0)
-            break;
 
-         array[j + 1] = array[j];
+      while (j >= 0 && cmp(this->array[j], t, ctx) > 0) {
+         this->array[j + 1] = this->array[j];
          j--;
       }
-      array[j + 1] = t;
+
+      this->array[j + 1] = t;
    }
-}
 
-void Vector_quickSortCustomCompare(Vector* this, Object_Compare compare) {
-   assert(compare);
-   assert(Vector_isConsistent(this));
-   quickSort(this->array, 0, this->items - 1, compare);
-   assert(Vector_isConsistent(this));
-}
-
-void Vector_insertionSort(Vector* this) {
-   assert(this->type->compare);
-   assert(Vector_isConsistent(this));
-   insertionSort(this->array, 0, this->items - 1, this->type->compare);
    assert(Vector_isConsistent(this));
 }
 
